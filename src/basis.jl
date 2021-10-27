@@ -1,6 +1,6 @@
 abstract type AbstractBasis end
 
-struct TensorBasis
+struct TensorBasis <: AbstractBasis
     L::Int
 end
 

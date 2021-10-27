@@ -99,7 +99,7 @@ end
 #
 ####################################################################
 
-struct SigmaHoppingOBC{T<:AbstractFloat} <: AbstractOperator
+struct SigmaHoppingOBC{T<:Number} <: AbstractOperator
     p::T
     q::T
     α::T
@@ -107,6 +107,13 @@ struct SigmaHoppingOBC{T<:AbstractFloat} <: AbstractOperator
     γ::T
     δ::T
 end
+
+function SigmaHoppingOBC(args...)
+    args = promote(args)
+    T = eltype(args)
+    SigmaHoppingOBC{T}(args)
+end
+
 
 function SigmaHoppingOBC(parameters::Dict)
     p = parameters["p"]
@@ -123,6 +130,8 @@ end
 function spmatrix(op::SigmaHoppingOBC,
     basis::AbstractBasis, T::Type=Float64)
 
+    L = basis.L
+
     p = op.p
     q = op.q
     α = op.α
@@ -132,13 +141,13 @@ function spmatrix(op::SigmaHoppingOBC,
 
     D = length(basis)
     H = spzeros(T, D,D)
-    H += α * spmatrix(SigmaPlus, 1, basis)
-    H += γ * spmatrix(SigmaMinus, 1, basis)
+    H += α * spmatrix(SigmaPlus, 1, basis, T)
+    H += γ * spmatrix(SigmaMinus, 1, basis, T)
     for i in 1:(L-1)
-        H += p * spmatrix(SigmaMinus, i, basis) * spmatrix(SigmaPlus, i+1, basis)
-        H += q * spmatrix(SigmaPlus, i, basis) * spmatrix(SigmaMinus, i+1, basis)
+        H += p * spmatrix(SigmaMinus, i, basis, T) * spmatrix(SigmaPlus, i+1, basis, T)
+        H += q * spmatrix(SigmaPlus, i, basis, T) * spmatrix(SigmaMinus, i+1, basis, T)
     end
-    H += β * spmatrix(SigmaMinus, L, basis)
-    H += δ * spmatrix(SigmaPlus, L, basis)
+    H += β * spmatrix(SigmaMinus, L, basis, T)
+    H += δ * spmatrix(SigmaPlus, L, basis, T)
     H
 end
