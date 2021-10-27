@@ -1,7 +1,7 @@
 name = "SpinQuantum"
 uuid = "856139d4-bd2b-4127-8d9d-3972242b49a8"
 authors = ["Goran Nakerst <go.nakerst@web.de>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
