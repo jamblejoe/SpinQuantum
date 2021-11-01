@@ -3,7 +3,7 @@ module SpinQuantum
 using LinearAlgebra
 using SparseArrays
 
-export TensorBasis
+export TensorBasis, TotalSpinConservedBasis
 export getstate, getstate!, getposition
 
 export SigmaX, SigmaY, SigmaZ, SigmaPlus, SigmaMinus
