@@ -143,7 +143,7 @@ end
 #
 ####################################################################
 
-struct SigmaHoppingOBC{T<:Number}
+struct SigmaHoppingChainOBC{T<:Number}
     p::T
     q::T
     α::T
@@ -152,14 +152,14 @@ struct SigmaHoppingOBC{T<:Number}
     δ::T
 end
 
-function SigmaHoppingOBC(args...)
+function SigmaHoppingChainOBC(args...)
     args = promote(args)
     T = eltype(args)
-    SigmaHoppingOBC{T}(args)
+    SigmaHoppingChainOBC{T}(args)
 end
 
 
-function SigmaHoppingOBC(parameters::Dict)
+function SigmaHoppingChainOBC(parameters::Dict)
     p = parameters["p"]
     q = parameters["q"]
 
@@ -168,10 +168,10 @@ function SigmaHoppingOBC(parameters::Dict)
     γ = haskey(parameters, "γ") ? parameters["γ"] : parameters["gamma"]
     δ = haskey(parameters, "δ") ? parameters["δ"] : parameters["delta"]
 
-    SigmaHoppingOBC(p,q,α,β,γ,δ)
+    SigmaHoppingChainOBC(p,q,α,β,γ,δ)
 end
 
-function spmatrix(op::SigmaHoppingOBC,
+function spmatrix(op::SigmaHoppingChainOBC,
     basis::AbstractBasis, T::Type=Float64)
 
     L = basis.L
@@ -193,5 +193,43 @@ function spmatrix(op::SigmaHoppingOBC,
     end
     H += β * spmatrix(SigmaMinus(L), basis, T)
     H += δ * spmatrix(SigmaPlus(L), basis, T)
+    H
+end
+
+struct SigmaHoppingChainPBC{T<:Number}
+    p::T
+    q::T
+end
+
+function SigmaHoppingChainPBC(args...)
+    args = promote(args)
+    T = eltype(args)
+    SigmaHoppingChainPBC{T}(args)
+end
+
+
+function SigmaHoppingChainPBC(parameters::Dict)
+    p = parameters["p"]
+    q = parameters["q"]
+
+    SigmaHoppingChainOBC(p,q)
+end
+
+function spmatrix(op::SigmaHoppingChainPBC,
+    basis::AbstractBasis, T::Type=Float64)
+
+    L = basis.L
+
+    p = op.p
+    q = op.q
+
+    D = length(basis)
+    H = spzeros(T, D,D)
+    for i in 1:(L-1)
+        H += p * spmatrix(SigmaMinus(i), basis, T) * spmatrix(SigmaPlus(i+1), basis, T)
+        H += q * spmatrix(SigmaPlus(i), basis, T) * spmatrix(SigmaMinus(i+1), basis, T)
+    end
+    H += p * spmatrix(SigmaMinus(L), basis, T) * spmatrix(SigmaPlus(1), basis, T)
+    H += q * spmatrix(SigmaPlus(L), basis, T) * spmatrix(SigmaMinus(1), basis, T)
     H
 end
