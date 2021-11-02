@@ -7,6 +7,7 @@ export TensorBasis, TotalSpinConservedBasis
 export getstate, getstate!, getposition
 
 export SigmaX, SigmaY, SigmaZ, SigmaPlus, SigmaMinus
+export SigmaPlusMinus, SigmaMinusPlus
 export spmatrix
 
 export SigmaHoppingChainOBC, SigmaHoppingChainPBC

@@ -36,7 +36,7 @@ SigmaZ(i::Integer) = SingleBodyOperator{:Z}(i)
 SigmaPlus(i::Integer) = SingleBodyOperator{:+}(i)
 SigmaMinus(i::Integer) = SingleBodyOperator{:-}(i)
 
-eltype(::SingleBodyOperator{:Y}) = ComplexF64
+Base.eltype(::SingleBodyOperator{:Y}) = ComplexF64
 
 
 
@@ -77,6 +77,41 @@ spmatrix(::SingleBodyOperator{:Z}, T::Type=Float64) = sparse([one(T) zero(T); ze
 spmatrix(::SingleBodyOperator{:+}, T::Type=Float64) = sparse([zero(T) zero(T); one(T) zero(T)])
 spmatrix(::SingleBodyOperator{:-}, T::Type=Float64) = sparse([zero(T) one(T); zero(T) zero(T)])
 
+struct TwoBodyOperator{T} <: AbstractOperator 
+    site1::Int
+    site2::Int
+end
+
+SigmaPlusMinus(i::Integer, j::Integer) = TwoBodyOperator{:±}(i,j)
+SigmaMinusPlus(i::Integer, j::Integer) = TwoBodyOperator{:∓}(i,j)
+
+# create a spin at site 1 and annihilate a spin at site 2
+function apply!(state::BitVector, op::TwoBodyOperator{:±}, T::Type=Float64)
+    site1 = op.site1
+    site2 = op.site2
+
+    # returns true if and only if site 1 is empty and site 2 is occupied
+    s = !state[site1] && state[site2]
+    state[site1] = 1
+    state[site2] = 0
+    return s ? one(T) : zero(T)
+end
+
+# annihilate a spin at site 1 and create a spin at site 2
+function apply!(state::BitVector, op::TwoBodyOperator{:∓}, T::Type=Float64)
+    site1 = op.site1
+    site2 = op.site2
+
+    # returns true if and only if site 1 is occupied and site 2 is empty
+    s = state[site1] && !state[site2]
+    state[site1] = 0
+    state[site2] = 1
+    return s ? one(T) : zero(T)
+end
+
+
+
+
 function spmatrix(op::AbstractOperator, basis::AbstractBasis, T::Type=Float64)
     spmatrix(op, basis, basis, T)
 end
@@ -92,7 +127,7 @@ function spmatrix(op::AbstractOperator,
 
     rows = Int[]
     cols = Int[]
-    values = []
+    values = T[]
 
     for i in eachindex(basis1)
         getstate!(basis_element, basis1, i)
@@ -212,7 +247,7 @@ function SigmaHoppingChainPBC(parameters::Dict)
     p = parameters["p"]
     q = parameters["q"]
 
-    SigmaHoppingChainOBC(p,q)
+    SigmaHoppingChainPBC(p,q)
 end
 
 function spmatrix(op::SigmaHoppingChainPBC,
@@ -226,10 +261,14 @@ function spmatrix(op::SigmaHoppingChainPBC,
     D = length(basis)
     H = spzeros(T, D,D)
     for i in 1:(L-1)
-        H += p * spmatrix(SigmaMinus(i), basis, T) * spmatrix(SigmaPlus(i+1), basis, T)
-        H += q * spmatrix(SigmaPlus(i), basis, T) * spmatrix(SigmaMinus(i+1), basis, T)
+        #H += p * spmatrix(SigmaMinus(i), basis, T) * spmatrix(SigmaPlus(i+1), basis, T)
+        #H += q * spmatrix(SigmaPlus(i), basis, T) * spmatrix(SigmaMinus(i+1), basis, T)
+        H += p * spmatrix(SigmaMinusPlus(i,i+1), basis, T)
+        H += q * spmatrix(SigmaPlusMinus(i,i+1), basis, T)
     end
-    H += p * spmatrix(SigmaMinus(L), basis, T) * spmatrix(SigmaPlus(1), basis, T)
-    H += q * spmatrix(SigmaPlus(L), basis, T) * spmatrix(SigmaMinus(1), basis, T)
+    #H += p * spmatrix(SigmaMinus(L), basis, T) * spmatrix(SigmaPlus(1), basis, T)
+    #H += q * spmatrix(SigmaPlus(L), basis, T) * spmatrix(SigmaMinus(1), basis, T)
+    H += p * spmatrix(SigmaMinusPlus(L,1), basis, T)
+    H += q * spmatrix(SigmaPlusMinus(L,1), basis, T)
     H
 end
