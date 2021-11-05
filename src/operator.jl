@@ -4,11 +4,11 @@ Pauli matrices
 σ_y = [0 -im; im 0]
 σ_z = [1 0; 0 -1]
 
-σ_+ = [0 0; 1 0] = 1/2 (σ_x - iσ_y)
-σ_- = [0 1; 0 0] = 1/2 (σ_x + iσ_y)
+σ_+ = [0 1; 0 0] = 1/2 (σ_x + iσ_y)
+σ_- = [0 0; 1 0] = 1/2 (σ_x - iσ_y)
 
-|0> = [1, 0]'
-|1> = [0, 1]'
+|0> = [0, 1]'
+|1> = [1, 0]'
 """
 
 abstract type AbstractOperator end
@@ -74,8 +74,8 @@ end
 spmatrix(::SingleBodyOperator{:X}, T::Type=Float64) = sparse([zero(T) one(T); one(T) zero(T)])
 spmatrix(::SingleBodyOperator{:Y}, T::Type=ComplexF64) = sparse([zero(T) -im; im zero(T)])
 spmatrix(::SingleBodyOperator{:Z}, T::Type=Float64) = sparse([one(T) zero(T); zero(T) one(T)])
-spmatrix(::SingleBodyOperator{:+}, T::Type=Float64) = sparse([zero(T) zero(T); one(T) zero(T)])
-spmatrix(::SingleBodyOperator{:-}, T::Type=Float64) = sparse([zero(T) one(T); zero(T) zero(T)])
+spmatrix(::SingleBodyOperator{:+}, T::Type=Float64) = sparse([zero(T) one(T); zero(T) zero(T)])
+spmatrix(::SingleBodyOperator{:-}, T::Type=Float64) = sparse([zero(T) zero(T); one(T) zero(T)])
 
 struct TwoBodyOperator{T} <: AbstractOperator 
     site1::Int
