@@ -82,7 +82,10 @@ struct TwoBodyOperator{T} <: AbstractOperator
     site2::Int
 end
 
+# the order is important when i=j
+# σ_i^+ σ_j^-
 SigmaPlusMinus(i::Integer, j::Integer) = TwoBodyOperator{:±}(i,j)
+# σ_i^- σ_j^+
 SigmaMinusPlus(i::Integer, j::Integer) = TwoBodyOperator{:∓}(i,j)
 
 # create a spin at site 1 and annihilate a spin at site 2
@@ -90,11 +93,15 @@ function apply!(state::BitVector, op::TwoBodyOperator{:±}, T::Type=Float64)
     site1 = op.site1
     site2 = op.site2
 
-    # returns true if and only if site 1 is empty and site 2 is occupied
-    s = !state[site1] && state[site2]
-    state[site1] = 1
-    state[site2] = 0
-    return s ? one(T) : zero(T)
+    if site1 == site2
+        return state[site1] ? one(T) : zero(T)
+    else
+        # returns true if and only if site 1 is empty and site 2 is occupied
+        s = !state[site1] && state[site2]
+        state[site1] = 1
+        state[site2] = 0
+        return s ? one(T) : zero(T)
+    end
 end
 
 # annihilate a spin at site 1 and create a spin at site 2
@@ -102,11 +109,15 @@ function apply!(state::BitVector, op::TwoBodyOperator{:∓}, T::Type=Float64)
     site1 = op.site1
     site2 = op.site2
 
-    # returns true if and only if site 1 is occupied and site 2 is empty
-    s = state[site1] && !state[site2]
-    state[site1] = 0
-    state[site2] = 1
-    return s ? one(T) : zero(T)
+    if site1 == site2
+        return state[site] ? zero(T) : one(T)
+    else
+        # returns true if and only if site 1 is occupied and site 2 is empty
+        s = state[site1] && !state[site2]
+        state[site1] = 0
+        state[site2] = 1
+        return s ? one(T) : zero(T)
+    end
 end
 
 
