@@ -10,8 +10,6 @@ export SigmaX, SigmaY, SigmaZ, SigmaPlus, SigmaMinus
 export SigmaPlusMinus, SigmaMinusPlus
 export spmatrix
 
-export SigmaHoppingChainOBC, SigmaHoppingChainPBC
-
 include("basis.jl")
 include("operator.jl")
 
