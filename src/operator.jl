@@ -181,5 +181,3 @@ function spmatrix(op::SingleBodyOperator, basis::TensorBasis, T::Type=Float64)
     m = spmatrix(op, T)
     kron(I(2^(site_index-1)), m, I(2^(L-site_index)))
 end
-
-
